@@ -4,6 +4,8 @@ library(shiny)
 library(tidyverse)
 library(shinydashboard)
 library(knitr)
+library(gridExtra)
+library(caret)
 
 
 shinyServer(function(input, output, session) {
@@ -110,5 +112,43 @@ shinyServer(function(input, output, session) {
     tab
   })
     
+
+  
+  output$glmfit <- renderPrint({
+    oasis <- data()
+    oasis2 <- oasis %>%
+        mutate(CDR2 = as.factor(ifelse(CDR == 0, 0, 1)), gender = as.factor(`M/F`), 
+               Educ = as.factor(Educ), SES = as.factor(SES))
+    oasis3 <- oasis2[-c(1, 2, 3, 8)]
+    index <- createDataPartition(oasis3$CDR2, p = input$split, list = FALSE)
+    Training <- oasis3[index,]
+    Testing <- oasis3[-index,]
+    others <- list(c("ASF", "eTIV", "CDR2"))
+    varvec <- unlist(append(input$vargroup1, others))
+    newdata <- Training[, varvec]
+    
+    fit <- train(CDR2 ~ ., data = newdata, method = "glm", family = "binomial", 
+                 preProcess = c("center", "scale"),
+                 trControl = trainControl(method = "cv", number = 5))
+    summary(fit)
+  })
+  
+  output$treefit <- renderPlot({
+    oasis <- data()
+    oasis2 <- oasis %>%
+      mutate(CDR2 = as.factor(ifelse(CDR == 0, 0, 1)), gender = as.factor(`M/F`), 
+             Educ = as.factor(Educ), SES = as.factor(SES))
+    oasis3 <- oasis2[-c(1, 2, 3, 8)]
+    index <- createDataPartition(oasis3$CDR2, p = input$split, list = FALSE)
+    Training <- oasis3[index,]
+    Testing <- oasis3[-index,]
+    others <- list(c("ASF", "eTIV", "CDR2"))
+    varvec2 <- unlist(append(input$vargroup2, others))
+    newdata2 <- Training[, varvec2]
+    
+    treefit <- tree(CDR2 ~ ., data = newdata2)
+    plot(treefit)
+    text(treefit, pretty = 0, cex = 0.6)
+  })
 
 })

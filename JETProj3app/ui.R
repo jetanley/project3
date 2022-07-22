@@ -10,6 +10,8 @@
 library(shiny)
 library(shinydashboard)
 library(knitr)
+library(gridExtra)
+library(caret)
 
 dashboardPage(skin="purple",
               
@@ -88,7 +90,7 @@ dashboardPage(skin="purple",
                                                                      c("eTIV", "nWBV", "ASF"))),
                                        conditionalPanel(condition = "input.plottype == 'box'",
                                                         radioButtons("pickvar3", "Choose a variable:", 
-                                                                     c("eTIV", "nWBV", "Age"))),
+                                                                     c("eTIV", "nWBV", "Age")))
                                    ),
                                    box(width=12,
                                        background="purple",
@@ -104,7 +106,7 @@ dashboardPage(skin="purple",
                                                                      c("M/F", "Educ", "SES"))),
                                        conditionalPanel(condition = "input.summtype == 'numsum'",
                                                         radioButtons("pickvar6", "Choose a variable:", 
-                                                                     c("eTIV", "nWBV", "Age"))),
+                                                                     c("eTIV", "nWBV", "Age")))
               
                                    )
                             ),
@@ -112,11 +114,11 @@ dashboardPage(skin="purple",
                                    fluidRow(
                                      box(width=12,
                                          title = "Graphical Summary of Your Choice",
-                                         plotOutput("plot1"),
+                                         plotOutput("plot1")
                                      ),
                                      box(width=12,
                                          title = "Numerical Summary of Your Choice",
-                                         tableOutput("table1"),
+                                         tableOutput("table1")
                                          
                                          
                                      )
@@ -145,7 +147,7 @@ dashboardPage(skin="purple",
                                        h5("Stuff")),
                                    box(background="purple",width=12,
                                        title = "Random Forest",
-                                       h5("wow so cool"),
+                                       h5("wow so cool")
                                        
                                    )
                             )
@@ -165,15 +167,26 @@ dashboardPage(skin="purple",
                                    ),
                                    box(background="purple",width=12,
                                        title = "Linear Regression Model",
-                                       h5("Stuff")
+                                       
+                                       checkboxGroupInput("vargroup1", "Choose which variables to include in the model:",
+                                                          choices = list("gender", "Age", "Educ", "SES", "MMSE", "nWBV"),
+                                                          selected = list("gender", "Age", "Educ", "SES", "MMSE", "nWBV"))
                                    ),
                                    box(background="purple",width=12,
                                        title = "Classification Tree",
+                                       checkboxGroupInput("vargroup2", "Choose which variables to include in the model:",
+                                                          choices = list("gender", "Age", "Educ", "SES", "MMSE", "nWBV"),
+                                                          selected = list("gender", "Age", "Educ", "SES", "MMSE", "nWBV")),
                                        h5("Stuff")
                                    ),
                                    box(background="purple",width=12,
                                        title = "Random Forest",
-                                       h5("wow so cool"),
+                                       h5("wow so cool")
+                                       
+                                   ),
+                                   box(background="purple",width=12,
+                                       title = "Click the button to run the models",
+                                       actionButton("B",h3("Ready!"), width = '100%')
                                        
                                    )
                             ),
@@ -186,13 +199,14 @@ dashboardPage(skin="purple",
                                        h5("testing/training stuff")),
                                    box(background="purple",width=12,
                                        title = "Linear Regression Model",
+                                       verbatimTextOutput("glmfit"),
                                        h5("Stuff")),
                                    box(background="purple",width=12,
                                        title = "Classification Tree",
-                                       h5("Stuff")),
+                                       plotOutput("treefit")),
                                    box(background="purple",width=12,
                                        title = "Random Forest",
-                                       h5("wow so cool"),
+                                       h5("wow so cool")
                                        
                                    )
                             )
@@ -253,7 +267,7 @@ dashboardPage(skin="purple",
                                        h5("Stuff")),
                                    box(background="purple",width=12,
                                        title = "Random Forest",
-                                       h5("wow so cool"),
+                                       h5("wow so cool")
                                        
                                    )
                             )
