@@ -6,6 +6,7 @@ library(shinydashboard)
 library(knitr)
 library(gridExtra)
 library(caret)
+library(tree)
 
 
 shinyServer(function(input, output, session) {
@@ -129,7 +130,7 @@ shinyServer(function(input, output, session) {
     
     fit <- train(CDR2 ~ ., data = newdata, method = "glm", family = "binomial", 
                  preProcess = c("center", "scale"),
-                 trControl = trainControl(method = "cv", number = 5))
+                 trControl = trainControl(method = "cv", number = input$lmk))
     summary(fit)
   })
   
@@ -146,9 +147,11 @@ shinyServer(function(input, output, session) {
     varvec2 <- unlist(append(input$vargroup2, others))
     newdata2 <- Training[, varvec2]
     
-    treefit <- tree(CDR2 ~ ., data = newdata2)
-    plot(treefit)
-    text(treefit, pretty = 0, cex = 0.6)
+    treefit <- train(CDR2 ~ ., data = newdata2, method = "rpart", 
+                     preProcess = c("center", "scale"),
+                     trControl = trainControl(method = "cv", number = input$treek))
+    plot(treefit$finalModel, main = "Classification Tree")
+    text(treefit$finalModel, pretty = 0, cex = 0.6)
   })
 
 })

@@ -12,6 +12,7 @@ library(shinydashboard)
 library(knitr)
 library(gridExtra)
 library(caret)
+library(tree)
 
 dashboardPage(skin="purple",
               
@@ -170,18 +171,25 @@ dashboardPage(skin="purple",
                                        
                                        checkboxGroupInput("vargroup1", "Choose which variables to include in the model:",
                                                           choices = list("gender", "Age", "Educ", "SES", "MMSE", "nWBV"),
-                                                          selected = list("gender", "Age", "Educ", "SES", "MMSE", "nWBV"))
+                                                          selected = list("gender", "Age", "Educ", "SES", "MMSE", "nWBV")),
+                                       numericInput("lmk", "Select a number for cross validation:", value = 10, min = 5, max = 20, step = 1),
+                                       checkboxInput("preprocesslm", "Do you want to use PreProcess = c('center', 'scale')?", value = TRUE)
                                    ),
                                    box(background="purple",width=12,
                                        title = "Classification Tree",
                                        checkboxGroupInput("vargroup2", "Choose which variables to include in the model:",
                                                           choices = list("gender", "Age", "Educ", "SES", "MMSE", "nWBV"),
                                                           selected = list("gender", "Age", "Educ", "SES", "MMSE", "nWBV")),
-                                       h5("Stuff")
+                                       numericInput("treek", "Select a number for cross validation:", value = 10, min = 5, max = 20, step = 1),
+                                       checkboxInput("preprocesstree", "Do you want to use PreProcess = c('center', 'scale')?", value = TRUE)
                                    ),
                                    box(background="purple",width=12,
                                        title = "Random Forest",
-                                       h5("wow so cool")
+                                       checkboxGroupInput("vargroup3", "Choose which variables to include in the model:",
+                                                          choices = list("gender", "Age", "Educ", "SES", "MMSE", "nWBV"),
+                                                          selected = list("gender", "Age", "Educ", "SES", "MMSE", "nWBV")),
+                                       numericInput("rfk", "Select a number for cross validation:", value = 10, min = 5, max = 20, step = 1),
+                                       checkboxInput("preprocessrf", "Do you want to use PreProcess = c('center', 'scale')?", value = TRUE)
                                        
                                    ),
                                    box(background="purple",width=12,
