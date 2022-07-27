@@ -18,7 +18,13 @@ shinyServer(function(input, output, session) {
 
   
   output$plot1 <- renderPlot({
-    oasis <- data()
+    
+    if (input$filtering == "no"){
+      oasis <- data() 
+    } else {
+      oasis <- data() %>% filter(`M/F` == input$filtering)
+    }
+    
     plotchoice <- input$plottype
     
     
@@ -74,7 +80,16 @@ shinyServer(function(input, output, session) {
   
   
   output$table1 <- renderTable({
-    oasis <- data()
+    
+    
+    if (input$filtering == "no"){
+      oasis <- data() 
+    } else {
+      oasis <- data() %>% filter(`M/F` == input$filtering)
+    }
+    
+    
+    
     tabchoice <- input$summtype
     
     if (tabchoice == "tab1"){
@@ -113,45 +128,226 @@ shinyServer(function(input, output, session) {
     tab
   })
     
-
-  
-  output$glmfit <- renderPrint({
-    oasis <- data()
-    oasis2 <- oasis %>%
-        mutate(CDR2 = as.factor(ifelse(CDR == 0, 0, 1)), gender = as.factor(`M/F`), 
-               Educ = as.factor(Educ), SES = as.factor(SES))
-    oasis3 <- oasis2[-c(1, 2, 3, 8)]
-    index <- createDataPartition(oasis3$CDR2, p = input$split, list = FALSE)
-    Training <- oasis3[index,]
-    Testing <- oasis3[-index,]
-    others <- list(c("ASF", "eTIV", "CDR2"))
-    varvec <- unlist(append(input$vargroup1, others))
-    newdata <- Training[, varvec]
-    
-    fit <- train(CDR2 ~ ., data = newdata, method = "glm", family = "binomial", 
-                 preProcess = c("center", "scale"),
-                 trControl = trainControl(method = "cv", number = input$lmk))
-    summary(fit)
-  })
-  
-  output$treefit <- renderPlot({
+# clean dataset
+  oasis3 <- eventReactive(input$B, {
     oasis <- data()
     oasis2 <- oasis %>%
       mutate(CDR2 = as.factor(ifelse(CDR == 0, 0, 1)), gender = as.factor(`M/F`), 
              Educ = as.factor(Educ), SES = as.factor(SES))
     oasis3 <- oasis2[-c(1, 2, 3, 8)]
+    
+  })
+  # create index for testing/training sets
+  index <- eventReactive(input$B, {
+    oasis3 <- oasis3()
     index <- createDataPartition(oasis3$CDR2, p = input$split, list = FALSE)
-    Training <- oasis3[index,]
-    Testing <- oasis3[-index,]
+  })
+  # create training set
+  Training <- eventReactive(input$B, {
+    oasis3 <- oasis3()
+    Training <- oasis3[index(),]
+  })
+  #create testing set
+  Testing <- eventReactive(input$B, {
+    oasis3 <- oasis3()
+    Testing <- oasis3[-index(),]
+  })
+  
+  
+  # fit the glm with selected variables and either with or without centering/scaling
+  fitglm <- eventReactive(input$B, {
+    Training <- Training()
+    
+    others <- list(c("ASF", "eTIV", "CDR2"))
+    varvec <- unlist(append(input$vargroup1, others))
+    newdata <- Training[, varvec]
+    
+    if (input$preprocesslm == 1) {
+      fitglm <- train(CDR2 ~ ., data = newdata, method = "glm", family = "binomial", 
+                      preProcess = c("center", "scale"),
+                      trControl = trainControl(method = "cv", number = input$lmk))
+    } else {
+      fitglm <- train(CDR2 ~ ., data = newdata, method = "glm", family = "binomial", 
+                      trControl = trainControl(method = "cv", number = input$lmk))
+    }
+  })
+  
+  # fit classification tree
+  treefit <- eventReactive(input$B, {
+    Training <- Training()
+    
     others <- list(c("ASF", "eTIV", "CDR2"))
     varvec2 <- unlist(append(input$vargroup2, others))
     newdata2 <- Training[, varvec2]
     
-    treefit <- train(CDR2 ~ ., data = newdata2, method = "rpart", 
-                     preProcess = c("center", "scale"),
-                     trControl = trainControl(method = "cv", number = input$treek))
+    if (input$preprocesstree == 1) {
+      treefit <- train(CDR2 ~ ., data = newdata2, method = "rpart", 
+                       preProcess = c("center", "scale"),
+                       trControl = trainControl(method = "cv", number = input$treek))
+    } else {
+      treefit <- train(CDR2 ~ ., data = newdata2, method = "rpart", 
+                       trControl = trainControl(method = "cv", number = input$treek))
+    }
+  })
+  
+  
+  # fit a random forest model
+  fitrf <- eventReactive(input$B, {
+    Training <- Training()
+    
+    others <- list(c("ASF", "eTIV", "CDR2"))
+    varvec3 <- unlist(append(input$vargroup3, others))
+    newdata3 <- Training[, varvec3]
+    
+    
+    fitrf <- train(CDR2 ~ ., data = newdata3, method = "rf", 
+                   trControl = trainControl(method = "cv", number = input$rfk),
+                   tuneGrid = expand.grid(mtry = c(1:round(sqrt(ncol(newdata3)-1)))))
+    
+    
+    
+  })
+  
+  
+  # table for accuracies
+  output$accuracies <- renderTable({
+    fitglm <- fitglm()
+    treefit <- treefit()
+    fitrf <- fitrf()
+    
+    accglm <- fitglm$results %>% select(Accuracy)
+    acctree <- treefit$results %>% filter(cp == treefit$bestTune$cp) %>% select(Accuracy)
+    accrf <- fitrf$results %>% filter(mtry == fitrf$bestTune$mtry) %>% select(Accuracy)
+    
+    accuracyTab <- cbind(accglm, acctree, accrf)
+    colnames(accuracyTab) <- list("GLM", "Classification Tree", "Random Forest") 
+    
+    accuracyTab
+  })
+  
+  # summaries and plots for each model fit
+  
+  output$glmsummary <- renderPrint({
+    summary(fitglm())
+  })
+  
+  output$treeplot <- renderPlot({
+    treefit <- treefit()
+    
     plot(treefit$finalModel, main = "Classification Tree")
     text(treefit$finalModel, pretty = 0, cex = 0.6)
   })
+  
+  output$rfplot <- renderPlot({
+    varimport <- varImp(fitrf())
+    plot(varimport)
+  })
+  
+  
+  # compare the models on the testing set
+  
+  best <- reactive({
+    fitglm <- fitglm()
+    treefit <- treefit()
+    fitrf <- fitrf()
+    
+    Testing <- Testing()
+    
+    others <- list(c("ASF", "eTIV", "CDR2"))
+    
+    varvec <- unlist(append(input$vargroup1, others))
+    newtest <- Testing[, varvec]
+    
+    varvec2 <- unlist(append(input$vargroup2, others))
+    newtest2 <- Testing[, varvec2]
+    
+    varvec3 <- unlist(append(input$vargroup3, others))
+    newtest3 <- Testing[, varvec3]
+    
+    #predict CDR using testing data
+    predglm <- predict(fitglm, newdata = Testing)
+    predtree <- predict(treefit, newdata = Testing)
+    predrf <- predict(fitrf, newdata = Testing)
+    
+    # see how we did
+    resampglm <- postResample(predglm, obs = Testing$CDR2)
+    resamptree <- postResample(predtree, obs = Testing$CDR2)
+    resamprf <- postResample(predrf, obs = Testing$CDR2)
+    
+    Models <- c("GLM", "Classification Tree", "Random Forest")
+    comparing <- data.frame(rbind(resampglm, resamptree, resamprf))
+    comparisons <- cbind(Models, comparing)
+    
+    comparisons[,-3]
+  })
+  
+  output$comptab <- renderTable(best())
+  
+  output$comparing <- renderText({
+    best <- best() %>% filter(Accuracy == max(Accuracy)) %>% select(Models)
+    print(paste0("The model with the highest accuracy on the testing set is ", best))
+  })
+  
+  predictdata <- eventReactive(input$B2,{
+    
+    gender <- as.factor(input$pickgender)
+    ASF <- as.double(input$pickASF)
+    Age <- as.double(input$pickage)
+    Educ <- as.factor(input$pickeduc)
+    eTIV <- as.double(input$pickeTIV)
+    MMSE <- as.double(input$pickMMSE)
+    nWBV <- as.double(input$picknWBV)
+    SES <- as.factor(input$pickses)
+    
+    data <- data.frame(gender, ASF, Age, Educ, eTIV, MMSE, nWBV, SES)
+    
+    others <- list(c("ASF", "eTIV"))
+    
+    if (input$pickmodel == "glm") {
+      varvec <- unlist(append(input$vargroup1, others))
+    } else if (input$pickmodel == "tree") {
+      varvec <- unlist(append(input$vargroup2, others))
+    } else {
+      varvec <- unlist(append(input$vargroup3, others))
+    }
+    
+    predictdata <- data[, varvec]
+    
+    predictdata
+    
+  })
+  
+  predicting <- eventReactive(input$B2, {
+    
+    if (input$pickmodel == "glm") {
+      fitglm <- fitglm()
+      Predicted <- predict(fitglm, newdata = predictdata())
+    } else if (input$pickmodel == "tree") {
+      treefit <- treefit()
+      Predicted <- predict(treefit, newdata = predictdata())
+    } else {
+      fitrf <- fitrf()
+      Predicted <- predict(fitrf, newdata = predictdata())
+    }
+    
+  })
+  
+  output$predict <- renderText({
+    if (predicting() == 0) { ans = "Normal Cognition"
+    } else {ans = "Some Impairment"}
+    
+    print(paste0("The Prediction of CDR is ", ans, "."))
+  })
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 
 })

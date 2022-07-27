@@ -33,7 +33,7 @@ dashboardPage(skin="purple",
                          ),
                 menuItem("Data", tabName = "data", icon = icon("stethoscope", lib = "font-awesome"))
               )),
-              # briefcase-medical and file-medical works
+              
               #define the body of the app
               dashboardBody(
                 tabItems(
@@ -60,7 +60,7 @@ dashboardPage(skin="purple",
                             
                             column(6,
                                    box(width=12,
-                                   tags$img(src = "Ch4_L1_Oasis_Logo.png", width = "300px", height = "150px",)
+                                   tags$img(src = "Ch4_L1_Oasis_Logo.png", width = "300px", height = "150px")
                                    ),
 
                                    #How to use the app
@@ -81,30 +81,53 @@ dashboardPage(skin="purple",
                   tabItem(tabName = "eda",
                           fluidRow(
                             column(width=3,
+                                   box(width=12, background = "purple",
+                                       radioButtons("filtering", 
+                                                    "Filter by Gender", 
+                                                    choices = c("No Filter" = "no", 
+                                                                "Females" = "F", 
+                                                                "Males" = "M"), 
+                                                    selected = "no")
+                                   ),
+                                   
                                    box(width=12,background="purple",
-                                       selectInput("plottype", "Choose a Type of Plot:", 
-                                                   c("Bar Chart" = "bar", "Histogram" = "hist", "Box Plot" = "box")),
+                                       selectInput("plottype", 
+                                                   "Choose a Type of Plot:", 
+                                                   c("Bar Chart" = "bar", 
+                                                     "Histogram" = "hist", 
+                                                     "Box Plot" = "box")),
+                                       
                                        conditionalPanel(condition = "input.plottype == 'bar'",
-                                                        radioButtons("pickvar1", "Choose a variable:", c("M/F", "Educ"))),
+                                                        radioButtons("pickvar1", 
+                                                                     "Choose a variable:", 
+                                                                     c("M/F", "Educ"))),
+                                       
                                        conditionalPanel(condition = "input.plottype == 'hist'",
-                                                        radioButtons("pickvar2", "Choose a variable:", 
+                                                        radioButtons("pickvar2", 
+                                                                     "Choose a variable:", 
                                                                      c("eTIV", "nWBV", "ASF"))),
+                                       
                                        conditionalPanel(condition = "input.plottype == 'box'",
-                                                        radioButtons("pickvar3", "Choose a variable:", 
+                                                        radioButtons("pickvar3", 
+                                                                     "Choose a variable:", 
                                                                      c("eTIV", "nWBV", "Age")))
                                    ),
                                    box(width=12,
                                        background="purple",
                                        
-                                       selectInput("summtype", "Choose a Type of Summary:", 
+                                       selectInput("summtype", 
+                                                   "Choose a Type of Summary:", 
                                                    c("1-way Contingency Table" = "tab1", 
                                                      "2-way Contingency Table" = "tab2", "5# Summary" = "numsum")),
+                                       
                                        conditionalPanel(condition = "input.summtype == 'tab1'",
                                                         radioButtons("pickvar4", "Choose a variable:", 
                                                                      c("M/F", "Educ", "SES", "CDR"))),
+                                       
                                        conditionalPanel(condition = "input.summtype == 'tab2'",
                                                         radioButtons("pickvar5", "Choose a variable:", 
                                                                      c("M/F", "Educ", "SES"))),
+                                       
                                        conditionalPanel(condition = "input.summtype == 'numsum'",
                                                         radioButtons("pickvar6", "Choose a variable:", 
                                                                      c("eTIV", "nWBV", "Age")))
@@ -188,8 +211,8 @@ dashboardPage(skin="purple",
                                        checkboxGroupInput("vargroup3", "Choose which variables to include in the model:",
                                                           choices = list("gender", "Age", "Educ", "SES", "MMSE", "nWBV"),
                                                           selected = list("gender", "Age", "Educ", "SES", "MMSE", "nWBV")),
-                                       numericInput("rfk", "Select a number for cross validation:", value = 10, min = 5, max = 20, step = 1),
-                                       checkboxInput("preprocessrf", "Do you want to use PreProcess = c('center', 'scale')?", value = TRUE)
+                                       numericInput("rfk", "Select a number for cross validation:", value = 10, min = 5, max = 20, step = 1)
+                                       
                                        
                                    ),
                                    box(background="purple",width=12,
@@ -201,57 +224,72 @@ dashboardPage(skin="purple",
                             column(9,
                                    #Description of App
                                    h1("Fitting the Models"),
-                                   #box to contain description
-                                   box(background="purple",width=12,
-                                       title = "Preparing the Data",
-                                       h5("testing/training stuff")),
+                                   
                                    box(background="purple",width=12,
                                        title = "Linear Regression Model",
-                                       verbatimTextOutput("glmfit"),
-                                       h5("Stuff")),
+                                       verbatimTextOutput("glmsummary")),
+                                   
                                    box(background="purple",width=12,
                                        title = "Classification Tree",
-                                       plotOutput("treefit")),
+                                       plotOutput("treeplot")),
+                                   
                                    box(background="purple",width=12,
                                        title = "Random Forest",
-                                       h5("wow so cool")
-                                       
-                                   )
-                            )
+                                       plotOutput("rfplot")),
+                                   
+                                   box(background="purple",width=6,
+                                       title = "Compare Accuracies on Training set",
+                                       tableOutput("accuracies")),
+                                   box(background="purple",width=6,
+                                       title = "Compare Accuracies on Testing set",
+                                       tableOutput("comptab")),
+                                   
+                                   box(background="purple",width=12,
+                                       textOutput("comparing"))
                           )
-                  ), # start next tab here
+                  )), # start next tab here
                   tabItem(tabName = "pred",
                           fluidRow(
                             #add in latex functionality if needed
                             withMathJax(),
-                            
+                            h1("Prediction"),
                             #two columns for each of the two items
                             column(3,
-                                   #Description of App
-                                   h1("Prediction"),
-                                   #box to contain description
-                                   box(background="purple",width=12,
-                                       title = "Preparing the Data",
-                                       h5("testing/training stuff")),
+                                   box(background = "purple", width = 12,
+                                       
+                                       selectInput("pickmodel", 
+                                                   "Choose a model:", 
+                                                   choices = c("GLM" = "glm", 
+                                                               "Classification Tree" = "tree", 
+                                                               "Random Forest" = "rf")),
+                                       
+                                       selectInput("pickgender", "Choose gender:", choices = c("F", "M"), selected = "F"),
+                                       
+                                       numericInput("pickage", "Choose an age value:", min = 33, max = 96, step = 1, value = 75),
+                                       
+                                       numericInput("pickeduc", "Choose a level of education:", min = 1, max = 5, step = 1, value = 3),
+                                       
+                                       numericInput("pickses", "Choose a level of SES:", min = 1, max = 5, step = 1, value = 3),
+                                       
+                                       numericInput("pickMMSE", "Choose a level of MMSE:", min = 15, max = 30, step = 1, value = 20),
+                                       
+                                       numericInput("picknWBV", "Choose a level of nWBV:", min = 0.644, max = 0.841, step = 0.05, value = 0.7),
+                                       
+                                       numericInput("pickeTIV", "Choose a level of eTIV:", min = 1123, max = 1992, step = 5, value = 1500),
+                                       
+                                       numericInput("pickASF", "Choose a level of ASF:", min = 0.881, max = 1.563, step = 0.05, value = 1),
+                                       
+                                       actionButton("B2",h3("Click to predict"), width = '100%')
+                                       
+                                       )),
                                    
-                                   box(background="purple",width=12,
-                                       title = "Random Forest",
-                                       h5("wow so cool")
-                                   )
-                            ),
+                            
                             column(9,
-                                   #Description of App
-                                   h1("Prediction"),
-                                   #box to contain description
-                                   box(background="purple",width=12,
-                                       title = "Preparing the Data",
-                                       h5("testing/training stuff")),
+                                   box(background = "purple", width = 12,
+                                       h5(textOutput("predict")))
                                    
-                                   box(background="purple",width=12,
-                                       title = "Random Forest",
-                                       h5("wow so cool")
-                                   )
                             )
+                          
                           )
                   ),
                   tabItem(tabName = "data",
@@ -275,13 +313,11 @@ dashboardPage(skin="purple",
                                        h5("Stuff")),
                                    box(background="purple",width=12,
                                        title = "Random Forest",
-                                       h5("wow so cool")
-                                       
-                                   )
-                            )
+                                       h5("wow so cool"))
+                                  )
                           )
                   )
-                  
+              ###    
                 )
               )
 )
