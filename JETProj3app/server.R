@@ -3,10 +3,8 @@
 library(shiny)
 library(tidyverse)
 library(shinydashboard)
-library(knitr)
 library(gridExtra)
 library(caret)
-library(tree)
 library(DT)
 
 

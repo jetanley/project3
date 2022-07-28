@@ -9,10 +9,9 @@
 
 library(shiny)
 library(shinydashboard)
-library(knitr)
+library(tidyverse)
 library(gridExtra)
 library(caret)
-library(tree)
 library(DT)
 
 dashboardPage(skin="purple",
