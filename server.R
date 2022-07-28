@@ -11,7 +11,7 @@ library(DT)
 shinyServer(function(input, output, session) {
     
   data <- reactive({
-    oasis <- na.omit(read_csv("../archive/oasis_cross-sectional.csv"))[-12]
+    oasis <- na.omit(read_csv("archive/oasis_cross-sectional.csv"))[-12]
   })
     
 
