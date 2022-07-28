@@ -16,7 +16,7 @@ The necessary packages include:
 * [`gridExtra`](https://cran.r-project.org/web/packages/gridExtra/index.html): Used for modeling  
 * [`caret`](https://topepo.github.io/caret/): Used for building models  
 * [`DT`](https://rstudio.github.io/DT/): Used to create an HTML widget for displaying the data in the final tab of the app with DataTables  
-* ['fontawesome'](https://cran.r-project.org/web/packages/fontawesome/index.html): Used for the icons on the app's tabs  
+* [`fontawesome`](https://cran.r-project.org/web/packages/fontawesome/index.html): Used for the icons on the app's tabs  
 
 ### Install Packages
 
