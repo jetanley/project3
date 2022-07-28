@@ -7,6 +7,7 @@ library(knitr)
 library(gridExtra)
 library(caret)
 library(tree)
+library(DT)
 
 
 shinyServer(function(input, output, session) {
@@ -280,14 +281,16 @@ shinyServer(function(input, output, session) {
     
     comparisons[,-3]
   })
-  
+  # show table comparing
   output$comptab <- renderTable(best())
   
+  #output best
   output$comparing <- renderText({
     best <- best() %>% filter(Accuracy == max(Accuracy)) %>% select(Models)
     print(paste0("The model with the highest accuracy on the testing set is ", best))
   })
   
+  # get new dataset ready for predicting
   predictdata <- eventReactive(input$B2,{
     
     gender <- as.factor(input$pickgender)
@@ -316,7 +319,7 @@ shinyServer(function(input, output, session) {
     predictdata
     
   })
-  
+  # get binary prediction
   predicting <- eventReactive(input$B2, {
     
     if (input$pickmodel == "glm") {
@@ -331,7 +334,7 @@ shinyServer(function(input, output, session) {
     }
     
   })
-  
+  # get prediction in laymens terms
   output$predict <- renderText({
     if (predicting() == 0) { ans = "Normal Cognition"
     } else {ans = "Some Impairment"}
@@ -340,9 +343,37 @@ shinyServer(function(input, output, session) {
   })
   
   
+  alldata <- reactive({
+    variables <- input$datachoosevars
+    
+    oasis <- data()
+    
+    if (input$filtergender == "F") {
+      data <- oasis %>% filter(`M/F` == "F") %>% select(variables)
+    } else if (input$filtergender == "M") {
+      data <- oasis %>% filter(`M/F` == "M") %>% select(variables)
+    } else {
+      data <- oasis %>% select(variables)
+    }
+    data
+
+  })
   
   
   
+  output$alldata <- DT::renderDataTable({
+    DT::datatable(alldata(), options = list(paging = FALSE))
+  })
+  
+  
+  output$download <- downloadHandler(
+    filename = function(){
+      paste("oasisdata-", Sys.Date(), ".csv", sep = "")
+    },
+    content = function(file){
+      write.csv(alldata(), file)
+    }
+  )
   
   
   

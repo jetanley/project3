@@ -13,6 +13,7 @@ library(knitr)
 library(gridExtra)
 library(caret)
 library(tree)
+library(DT)
 
 dashboardPage(skin="purple",
               
@@ -60,7 +61,7 @@ dashboardPage(skin="purple",
                             
                             column(6,
                                    box(width=12,
-                                   tags$img(src = "Ch4_L1_Oasis_Logo.png", width = "300px", height = "150px")
+                                   img(src = "oasis-logo-v1.png", height = "250px")
                                    ),
 
                                    #How to use the app
@@ -300,20 +301,52 @@ dashboardPage(skin="purple",
                             #two columns for each of the two items
                             column(12,
                                    #Description of App
-                                   h1("About the Models"),
+                                   h1("The Data"),
                                    #box to contain description
+                                   box(background="purple",width=6,
+                                       checkboxGroupInput("datachoosevars", 
+                                                          "Pick what variables to include:", 
+                                                          choices = c("ID" = "ID", 
+                                                                      "Gender" = "M/F",
+                                                                      "Hand" = "Hand",
+                                                                      "Age" = "Age",
+                                                                      "Education" = "Educ",
+                                                                      "Socioeconomic Status" = "SES",
+                                                                      "Mini Mental State Examination" = "MMSE",
+                                                                      "Clinical Dementia Rating" = "CDR",
+                                                                      "Estimated Total Intracranial Volume" = "eTIV",
+                                                                      "Normalize Whole Brain Volume" = "nWBV",
+                                                                      "Atlas Scaling Factor" = "ASF"),
+                                                          selected = c("ID" = "ID", 
+                                                                       "Gender" = "M/F",
+                                                                       "Hand" = "Hand",
+                                                                       "Age" = "Age",
+                                                                       "Education" = "Educ",
+                                                                       "Socioeconomic Status" = "SES",
+                                                                       "Mini Mental State Examination" = "MMSE",
+                                                                       "Clinical Dementia Rating" = "CDR",
+                                                                       "Estimated Total Intracranial Volume" = "eTIV",
+                                                                       "Normalize Whole Brain Volume" = "nWBV",
+                                                                       "Atlas Scaling Factor" = "ASF"))),
+                                   
+                                   box(background="purple",width=6,
+                                       radioButtons("filtergender", 
+                                                    "Filter data by gender?", 
+                                                    choices = c("No" = "no", 
+                                                                "Females" = "F", 
+                                                                "Males" = "M"), 
+                                                    selected = "no")
+                                       
+                                       ),
+                                   
+                                   box(background="purple",width=6,
+                                       title = "Click here to download the dataset",
+                                       downloadButton("download", "Download")
+                                       ),
+                                   
                                    box(background="purple",width=12,
-                                       title = "Preparing the Data",
-                                       h5("testing/training stuff")),
-                                   box(background="purple",width=12,
-                                       title = "Linear Regression Model",
-                                       h5("Stuff")),
-                                   box(background="purple",width=12,
-                                       title = "Classification Tree",
-                                       h5("Stuff")),
-                                   box(background="purple",width=12,
-                                       title = "Random Forest",
-                                       h5("wow so cool"))
+                                       title = "Oasis Data",
+                                       dataTableOutput("alldata"), style = "height:500px; overflow-y: scroll;overflow-x: scroll;")
                                   )
                           )
                   )
