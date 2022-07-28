@@ -159,7 +159,7 @@ shinyServer(function(input, output, session) {
   fitglm <- eventReactive(input$B, {
     Training <- Training()
     
-    others <- list(c("ASF", "eTIV", "CDR2"))
+    others <- list(c("CDR2"))
     varvec <- unlist(append(input$vargroup1, others))
     newdata <- Training[, varvec]
     
@@ -177,7 +177,7 @@ shinyServer(function(input, output, session) {
   treefit <- eventReactive(input$B, {
     Training <- Training()
     
-    others <- list(c("ASF", "eTIV", "CDR2"))
+    others <- list(c("CDR2"))
     varvec2 <- unlist(append(input$vargroup2, others))
     newdata2 <- Training[, varvec2]
     
@@ -196,7 +196,7 @@ shinyServer(function(input, output, session) {
   fitrf <- eventReactive(input$B, {
     Training <- Training()
     
-    others <- list(c("ASF", "eTIV", "CDR2"))
+    others <- list(c("CDR2"))
     varvec3 <- unlist(append(input$vargroup3, others))
     newdata3 <- Training[, varvec3]
     
@@ -254,7 +254,7 @@ shinyServer(function(input, output, session) {
     
     Testing <- Testing()
     
-    others <- list(c("ASF", "eTIV", "CDR2"))
+    others <- list(c("CDR2"))
     
     varvec <- unlist(append(input$vargroup1, others))
     newtest <- Testing[, varvec]
@@ -304,14 +304,14 @@ shinyServer(function(input, output, session) {
     
     data <- data.frame(gender, ASF, Age, Educ, eTIV, MMSE, nWBV, SES)
     
-    others <- list(c("ASF", "eTIV"))
+    
     
     if (input$pickmodel == "glm") {
-      varvec <- unlist(append(input$vargroup1, others))
+      varvec <- unlist(input$vargroup1)
     } else if (input$pickmodel == "tree") {
-      varvec <- unlist(append(input$vargroup2, others))
+      varvec <- unlist(input$vargroup2)
     } else {
-      varvec <- unlist(append(input$vargroup3, others))
+      varvec <- unlist(input$vargroup3)
     }
     
     predictdata <- data[, varvec]
