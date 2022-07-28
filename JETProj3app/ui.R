@@ -185,29 +185,44 @@ dashboardPage(skin="purple",
                                        title = "Classification Tree",
                                        box(background = "purple", width = 4, 
                                            title = "Benefits",
-                                           h5("cool") 
+                                           h5("Trees have quite a few perks:"),
+                                           h5("- They are easy to understand and interpret"),
+                                           h5("- It is not necessary to scale the predictors"),
+                                           h5("- Trees have automatic variable selection"),
+                                           h5("- No statistical assumptions!")
                                        ),
                                        box(background = "purple", width = 4, 
                                            title = "About",
-                                           h5("cool")
+                                           h5("Classification trees provide another way to predict/classify the outcome based on predictor variables. The process involves splitting the predictor space into regions and making a prediction for each region. This split can be made using several different methods, two of which include minimizing either the Gini index or Deviance. $$Gini: 2p(1-p)$$ $$Deviance: -2p\\log(p)-2(1-p)\\log(1-p),$$ where", em("p = P"), "(correct classification). For classification, the most prevalent class of the outcome variable within that region (using the training set) will be the prediction for that region. This split and decision is made several times to create a large tree. Once the tree is made, overfitting can be avoided by using the misclassification rate to prune the tree. ")
                                        ),
                                        box(background = "purple", width = 4, 
                                            title = "Drawbacks",
-                                           h5("cool"))),
+                                           h5("There's always a catch:"),
+                                           h5("- Slight changes in the data may cause a big change in the model"),
+                                           h5("- The algorithm does not look ahead (greedy) and is not the most optimal"),
+                                           h5("- Pruning is typically necessary and is just another step to perform")
+                                           )),
                                    
                                    box(background="purple",width=12,
                                        title = "Random Forest",
                                        box(background = "purple", width = 4, 
                                            title = "Benefits",
-                                           h5("dsfs") 
+                                           h5("In comparison to the basic classification tree models, Random Forest models:"),
+                                           h5("- Average across many fitted trees, allowing for a better prediction"),
+                                           h5("- Variance over an individually fitted tree is decreased"),
+                                           h5("- a strong predictor will not dominate splits, since not all predictors are being used for each boostrapping sample")
                                        ),
                                        box(background = "purple", width = 4, 
                                            title = "About",
-                                           h5("fdsw")
+                                           h5("Random Forest models are a special case of bagging models. In general, the steps are as follows:"),
+                                           h5("1. a bootstrap sample of a random subset of predictors of size $$m=\\sqrt{p}$$ is created from the observations in the data"),
+                                           h5("2. a tree is fit to this sample and a prediction for values of ", em("x"), " is saved as $$\\hat{y}^{*1}(x).$$ This process is repeated ", em("B"), " times."),
+                                           h5("3. The trees are then averaged to find the final predicted classification"),
+                                           h5("MSE is then used to judge performance. $$MSE = \\frac{1}{\\mbox{num of test obs}} \\sum_{i=1}^{\\mbox{num of test obs}}(y_i-\\hat{y}_i)^2$$")
                                        ),
                                        box(background = "purple", width = 4, 
                                            title = "Drawbacks",
-                                           h5("gfdgs"))
+                                           h5("The biggest drawback is the loss of interpretability, however one can still investigate importance of variables"))
                                        
                                    )
                             )
